@@ -1,102 +1,138 @@
-// JavaScript code for the Age Checker application+
+// User-first, accessible Age Tester logic
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Get DOM elements
-    const birthDateInput = document.getElementById('birth-date');
-    const checkBtn = document.getElementById('check-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const resultContainer = document.getElementById('result');
-    const resultMessage = document.getElementById('result-message');
-    const errorMessage = document.getElementById('error-message');
+  // DOM elements
+  const birthDateInput = document.getElementById('birth-date');
+  const checkBtn = document.getElementById('check-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const resultContainer = document.getElementById('result');
+  const errorMessage = document.getElementById('error-message');
+  const reaperBg = document.querySelector('.reaper-bg');
+  const reaperObject = document.getElementById('reaper-svg');
+  const ageForm = document.getElementById('age-form');
 
-    // Set max date to today (can't select future dates)
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    birthDateInput.max = `${year}-${month}-${day}`;
-    
-    // Set min date to 120 years ago (reasonable age limit)
-    const minDate = new Date();
-    minDate.setFullYear(year - 120);
-    const minYear = minDate.getFullYear();
-    const minMonth = String(minDate.getMonth() + 1).padStart(2, '0');
-    const minDay = String(minDate.getDate()).padStart(2, '0');
-    birthDateInput.min = `${minYear}-${minMonth}-${minDay}`;
+  // Set min/max date
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  birthDateInput.max = `${yyyy}-${mm}-${dd}`;
+  const minDate = new Date(yyyy - 120, today.getMonth(), today.getDate());
+  birthDateInput.min = `${minDate.getFullYear()}-${String(minDate.getMonth()+1).padStart(2,'0')}-${String(minDate.getDate()).padStart(2,'0')}`;
 
-    // Calculate age from birth date
-    const calculateAge = (birthDate) => {
-        const today = new Date();
-        const birth = new Date(birthDate);
-        
-        let age = today.getFullYear() - birth.getFullYear();
-        const monthDifference = today.getMonth() - birth.getMonth();
-        
-        // Adjust age if birthday hasn't occurred yet this year
-        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birth.getDate())) {
-            age--;
-        }
-        
-        return age;
-    };
+  // Helper: Calculate age
+  function calculateAge(birthDate) {
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
 
-    // Check age function
-    const checkAge = () => {
-        // Clear previous results
-        resultContainer.className = 'result-container';
-        errorMessage.classList.add('hidden');
-        
-        // Get the input value
-        const birthDate = birthDateInput.value;
-        
-        // Validate input
-        if (!birthDate) {
-            showError('Please select your birth date');
-            return;
-        }
+  // Helper: Get SVG doc and run callback
+  function getReaperSVGDoc(callback) {
+    if (!reaperObject) return;
+    if (reaperObject.contentDocument) {
+      callback(reaperObject.contentDocument);
+    } else {
+      reaperObject.addEventListener('load', () => {
+        callback(reaperObject.contentDocument);
+      }, { once: true });
+    }
+  }
 
-        // Validate age is not over 120
-        const age = calculateAge(birthDate);
-        if (age > 120) {
-            showError('YOU ARE ALREADY WITH ME');
-            return;
-        }
-        
-        // Determine age category and display result
-        if (age >= 65) {
-            resultContainer.classList.add('senior');
-            resultMessage.textContent = `You are ${age} years old DEATH LOOMS!`;
-        } else if (age >= 18) {
-            resultContainer.classList.add('adult');
-            resultMessage.textContent = `You are ${age} years old BEWARE! I LURK!`;
-        } else {
-            resultContainer.classList.add('minor');
-            resultMessage.textContent = `You are ${age} years old You are safe...for now.`;
-        }
-    };
-    
-    // Show error message
-    const showError = (message) => {
-        errorMessage.textContent = message;
-        errorMessage.classList.remove('hidden');
-        resultMessage.textContent = '';
-    };
-    
-    // Reset function
-    const resetForm = () => {
-        birthDateInput.value = '';
-        resultContainer.className = 'result-container';
-        resultMessage.textContent = '';
-        errorMessage.classList.add('hidden');
-    };
-    
-    // Event listeners
-    checkBtn.addEventListener('click', checkAge);
-    resetBtn.addEventListener('click', resetForm);
-    
-    // Allow Enter key to submit when date field is focused
-    birthDateInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            checkAge();
-        }
+  // Helper: Set eye color
+  function setReaperEyes(color) {
+    getReaperSVGDoc(svgDoc => {
+      if (!svgDoc) return;
+      const leftEye = svgDoc.getElementById('eye-left');
+      const rightEye = svgDoc.getElementById('eye-right');
+      if (leftEye) leftEye.setAttribute('fill', color);
+      if (rightEye) rightEye.setAttribute('fill', color);
     });
+  }
+  // Helper: Reset eyes to default
+  function resetReaperEyes() {
+    setReaperEyes('#ffffff');
+  }
+
+  // Show error
+  function showError(msg) {
+    errorMessage.textContent = msg;
+    errorMessage.classList.remove('hidden');
+    resultContainer.textContent = '';
+    resultContainer.className = 'result-container';
+  }
+
+  // Show result
+  function showResult(age, group) {
+    let msg = '';
+    if (group === 'senior') {
+      msg = `You are ${age} years old. DEATH LOOMS!`;
+      setReaperEyes('#ff5252');
+    } else if (group === 'adult') {
+      msg = `You are ${age} years old. BEWARE! I LURK!`;
+      setReaperEyes('#FCCB26');
+    } else {
+      msg = `You are ${age} years old. You are safe... for now.`;
+      setReaperEyes('#69f0ae');
+    }
+    resultContainer.textContent = msg;
+    resultContainer.className = `result-container ${group}`;
+    errorMessage.classList.add('hidden');
+  }
+
+  // Animate reaper rising
+  function riseReaper() {
+    reaperBg.classList.add('risen');
+  }
+  function resetReaper() {
+    reaperBg.classList.remove('risen');
+    resetReaperEyes();
+  }
+
+  // Main check
+  function checkAge(e) {
+    if (e) e.preventDefault();
+    resetReaper();
+    const birthDate = birthDateInput.value;
+    if (!birthDate) {
+      showError('Please select your birth date.');
+      return;
+    }
+    const age = calculateAge(birthDate);
+    if (age < 0 || age > 120) {
+      showError('Please enter a valid birth date (age 0-120).');
+      return;
+    }
+    setTimeout(riseReaper, 120);
+    if (age >= 65) {
+      showResult(age, 'senior');
+    } else if (age >= 18) {
+      showResult(age, 'adult');
+    } else {
+      showResult(age, 'minor');
+    }
+  }
+
+  // Reset form
+  function resetForm() {
+    ageForm.reset();
+    resultContainer.textContent = '';
+    resultContainer.className = 'result-container';
+    errorMessage.classList.add('hidden');
+    resetReaper();
+  }
+
+  // Event listeners
+  ageForm.addEventListener('submit', checkAge);
+  resetBtn.addEventListener('click', resetForm);
+  birthDateInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkAge(e);
+  });
+
+  // On load, reset everything
+  resetForm();
 });

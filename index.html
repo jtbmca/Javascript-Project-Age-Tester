@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Age Tester</title>
-    <link rel="stylesheet" href="./CSS/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Age Tester</title>
+  <link rel="stylesheet" href="./CSS/style.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Age Tester</h1>
-        <div class="age-form">
-            <label for="birth-date">Enter your birth date:</label>
-            <input type="date" id="birth-date" aria-describedby="date-format-hint">
-            <p id="date-format-hint" class="hint-text">Please select your date of birth</p>
-            <div class="buttons">
-                <button id="check-btn">Check Age</button>
-                <button id="reset-btn">Reset</button>
-            </div>
-        </div>
-        <div id="result" class="result-container">
-            <p id="result-message"></p>
-        </div>
-        <div id="error-message" class="error hidden"></div>
-    </div>
-    <script src="./JS/script.js"></script>
+  <div class="reaper-bg" aria-hidden="true">
+    <object id="reaper-svg" type="image/svg+xml" data="./Media/Reaper.svg"></object>
+  </div>
+  <main class="container" aria-label="Age Tester">
+    <h1>Age Tester</h1>
+    <form id="age-form" autocomplete="off">
+      <label for="birth-date">Enter your birth date:</label>
+      <input type="date" id="birth-date" name="birth-date" required aria-describedby="date-format-hint"/>
+      <p id="date-format-hint" class="hint-text">Please select your date of birth</p>
+      <div class="buttons">
+        <button type="submit" id="check-btn">Check Age</button>
+        <button type="button" id="reset-btn">Reset</button>
+      </div>
+    </form>
+    <div id="result" class="result-container" aria-live="polite"></div>
+    <div id="error-message" class="error hidden" role="alert"></div>
+  </main>
+  <script src="./JS/script.js"></script>
 </body>
 </html>
